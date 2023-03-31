@@ -3,16 +3,10 @@ package cn.scutbot.teamcitylark.chart;
 import cn.scutbot.teamcitylark.LarkNotifierEnabled;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import jetbrains.buildServer.http.HttpApi;
-import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.SBuild;
-import jetbrains.buildServer.serverSide.ServerResponsibility;
-import jetbrains.buildServer.serverSide.TeamCityNodes;
 import jetbrains.buildServer.serverSide.artifacts.BuildArtifactsViewMode;
-import jetbrains.buildServer.serverSide.impl.BuildAgentMessagesQueue;
 import jetbrains.buildServer.users.SUser;
 import jetbrains.buildServer.web.openapi.PluginDescriptor;
-import org.jetbrains.teamcity.perfmon.PerfMonDataAccessor;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Service;
 
