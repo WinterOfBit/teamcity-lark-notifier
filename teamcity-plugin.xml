@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<teamcity-plugin xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:schemas-jetbrains-com:teamcity-plugin-v1-xml">
+  <info>
+    <name>teamcity-lark-notifier</name>
+    <display-name>teamcity-lark-notifier</display-name>
+    <version>@Version@</version>
+    <description>Send CI Status to Lark</description>
+    <email>Aluoqiwen@outlook.com</email>
+    <vendor>
+      <name>luoqiwen</name>
+      <url>luoqiwen.com</url>
+      <logo>https://gravatar.loli.net/avatar/81fe76782e2736040b5ed03b23b40ca3</logo>
+    </vendor>
+  </info>
+  <deployment use-separate-classloader="false"/>
+</teamcity-plugin>
