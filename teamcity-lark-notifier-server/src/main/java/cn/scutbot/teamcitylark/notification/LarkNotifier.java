@@ -226,7 +226,11 @@ public class LarkNotifier extends NotificatorAdapter {
             if (buildTrigger.isTriggeredByUser()) {
                 trigger = buildTrigger.getUser().getDescriptiveName();
             } else {
-                trigger = buildTrigger.getRawTriggeredBy();
+                var raw = buildTrigger.getRawTriggeredBy();
+                if (raw.startsWith(TriggeredByBuilder.PARAMETERS_PREFIX + TriggeredByBuilder.VCS_NAME_PARAM_NAME)) {
+                    trigger = "VCS Change";
+                } else
+                    trigger = raw;
             }
 
             if (build.isArtifactsExists()) {
