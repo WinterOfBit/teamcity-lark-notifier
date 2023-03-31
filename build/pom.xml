@@ -10,9 +10,9 @@
   <packaging>pom</packaging>
   <properties>
       <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
-      <teamcity.teamcity-lark-notifier.plugin.version>snapshot-${maven.build.timestamp}</teamcity.teamcity-lark-notifier.plugin.version>
-      <teamcity.teamcity-lark-notifier.plugin.vendorName>Plugin vendor name</teamcity.teamcity-lark-notifier.plugin.vendorName>
-      <teamcity.teamcity-lark-notifier.plugin.vendorUrl>Plugin vendor URL</teamcity.teamcity-lark-notifier.plugin.vendorUrl>
+      <teamcity.teamcity-lark-notifier.plugin.version>1.0</teamcity.teamcity-lark-notifier.plugin.version>
+      <teamcity.teamcity-lark-notifier.plugin.vendorName>luoqiwen</teamcity.teamcity-lark-notifier.plugin.vendorName>
+      <teamcity.teamcity-lark-notifier.plugin.vendorUrl>https://gravatar.loli.net/avatar/81fe76782e2736040b5ed03b23b40ca3</teamcity.teamcity-lark-notifier.plugin.vendorUrl>
   </properties>
   <dependencies>
       <dependency>

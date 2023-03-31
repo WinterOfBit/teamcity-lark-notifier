@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
@@ -34,9 +35,14 @@ public class LarkNotifierProperties {
     public static final String NameGlobal = "Lark";
 
     public static final DateFormat DateFormatterGlobal = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    public static final DateFormat DateFormatterChart = new SimpleDateFormat("HH:mm:ss");
 
     public static String format(Date date) {
         return DateFormatterGlobal.format(date);
+    }
+
+    public static String chartFormat(Long date) {
+        return DateFormatterChart.format(Date.from(Instant.ofEpochMilli(date)));
     }
 
     public static String format(BuildProblemData failureReason) {

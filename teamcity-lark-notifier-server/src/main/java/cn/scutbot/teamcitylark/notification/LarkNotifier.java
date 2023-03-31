@@ -2,14 +2,11 @@ package cn.scutbot.teamcitylark.notification;
 
 import cn.scutbot.teamcitylark.LarkNotifierEnabled;
 import cn.scutbot.teamcitylark.LarkNotifierProperties;
-import cn.scutbot.teamcitylark.chart.ChartService;
 import cn.scutbot.teamcitylark.chart.StatisticsChartImageProvider;
 import cn.scutbot.teamcitylark.lark.LarkClientProvider;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.google.gson.stream.JsonWriter;
 import com.intellij.openapi.diagnostic.Logger;
 import com.lark.oapi.service.im.v1.enums.CreateMessageReceiveIdTypeEnum;
 import jetbrains.buildServer.BuildProblemData;
@@ -28,10 +25,7 @@ import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 import static cn.scutbot.teamcitylark.LarkNotifierProperties.format;
 
@@ -73,6 +67,12 @@ public class LarkNotifier extends NotificatorAdapter {
         return descriptor.getType();
     }
 
+    @NotNull
+    @Override
+    public String getDisplayName() {
+        return LarkNotifierProperties.NameGlobal;
+    }
+
     private void larkNotify(JsonObject content, String messageType, SUser user, SProject project) {
         var display = user.getPropertyValue(larkProperties.getPropertyDisplayName());
         var receiverType = user.getPropertyValue(larkProperties.getPropertyReceiverType());
@@ -96,18 +96,37 @@ public class LarkNotifier extends NotificatorAdapter {
         }
     }
 
-    private void larkNotify(SBuild build, Collection<SUser> users, String sourceType) {
+    private void larkPlainTextNotify(SBuild build, Collection<SUser> users, String content) {
         var buildType = build.getBuildType();
-        logger.info("Lark wide notifier");
+        logger.info("Lark text wide notifier");
         if (buildType != null) {
             var project = projectManager.findProjectById(buildType.getProjectId());
             if (project != null) {
                 for (SUser user : users) {
-                    //chartImageProvider.getPerformanceMonImage(build, user);
+                    var data = new JsonObject();
+
+                    data.addProperty("text", content);
+
+                    logger.info("Sending  " + data);
+                    larkNotify(data, "text", user, project);
+                }
+            }
+        }
+    }
+    private void larkMessageCardNotify(SBuild build, Collection<SUser> users, String sourceType) {
+        var buildType = build.getBuildType();
+        logger.info("Lark message card wide notifier");
+        if (buildType != null) {
+            var project = projectManager.findProjectById(buildType.getProjectId());
+            if (project != null) {
+                for (SUser user : users) {
                     var overriddenParams = user.getPropertyValue(larkProperties.getPropertyOverriddenParams());
                     var var_data = overrideParams(getParamSet(sourceType, user, build), overriddenParams);
-                    var image = chartImageProvider.getBuildReportImage(build, user);
-                    var_data.addProperty("agent_info", larkImageUpload(image, user, project));
+
+                    var staticsImage = chartImageProvider.getBuildReportImage(build, user);
+                    var_data.addProperty("agent_info", larkImageUpload(staticsImage, user, project));
+                    var perfmonImage = chartImageProvider.getPerformanceMonImage(build, user);
+                    var_data.addProperty("perfmon_info", larkImageUpload(perfmonImage, user, project));
 
                     var data = new JsonObject();
                     var templateData = new JsonObject();
@@ -133,10 +152,14 @@ public class LarkNotifier extends NotificatorAdapter {
         if (client != null) {
             try {
                 var resp = client.uploadImage(image);
+                if (resp == null)
+                    return "";
+
                 logger.info(resp.getMsg());
                 return resp.getData().getImageKey();
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                logger.error(e);
+                return "";
             }
         }
 
@@ -177,15 +200,27 @@ public class LarkNotifier extends NotificatorAdapter {
 
         var buildType = build.getBuildType();
         if (buildType != null) {
+            switch (type) {
+                case "fail":
+                case "success": {
+                    json.addProperty("time", format(new Date()));
+                    break;
+                }
+                case "start": {
+                    json.addProperty("time", format(build.getStartDate()));
+                    break;
+                }
+            }
+
             branch = getOrEmpty(build.getParametersProvider(), "branch_tag");
             endpoint = getOrEmpty(build.getParametersProvider(), ("docker.registry.endpoint"));
             pull_command = "docker pull center.sim.scutbot.cn/simulatorx/" + branch + ":" + tag;
             duration = build.getDuration() + "s";
-            log_url = String.format("%s/downloadRawMessageFile.html?buildId=%s", rootUrlHolder.getRootUrl(), build.getBuildId());
+            log_url = String.format("%s/downloadRawMessageFile.html?buildId=%s", getRootUrl(), build.getBuildId());
 
-            var origChannel = build.getParametersProvider().get("channel");
+            var origChannel = build.getParametersProvider().get("publish.artifact.channel");
             var origTag = build.getParametersProvider().get("artifact_tag");
-            tag = origChannel == null ? (origTag == null ? "" : origTag) : origChannel;
+            tag = origTag == null ? (origChannel == null ? "" : origChannel) : origTag;
 
             var buildTrigger = build.getTriggeredBy();
             if (buildTrigger.isTriggeredByUser()) {
@@ -213,7 +248,11 @@ public class LarkNotifier extends NotificatorAdapter {
 
                     if (compress != null) {
                         artifact_name = compress.getName();
-                        artifact_url = rootUrlHolder.getRootUrl() + compress.getRelativePath();
+                        artifact_url = String.format(
+                                "%s/repository/download/Awa_Qwq/%d:id/%s",
+                                getRootUrl(),
+                                build.getBuildId(),
+                                compress.getRelativePath());
                     }
                 }
             }
@@ -230,18 +269,6 @@ public class LarkNotifier extends NotificatorAdapter {
                 problems.add(changeNode);
             }
 
-        }
-
-        switch (type) {
-            case "fail":
-            case "success": {
-                json.addProperty("time", format(build.getFinishDate()));
-                break;
-            }
-            case "start": {
-                json.addProperty("time", format(build.getStartDate()));
-                break;
-            }
         }
 
         json.addProperty("branch", branch);
@@ -276,22 +303,20 @@ public class LarkNotifier extends NotificatorAdapter {
     @Override
     public void notifyBuildStarted(@NotNull SRunningBuild build, @NotNull Set<SUser> users) {
         logger.info("Notifying start build");
-        larkNotify(build, users, "start");
+        larkMessageCardNotify(build, users, "start");
     }
 
     @Override
     public void notifyBuildSuccessful(@NotNull SRunningBuild build, @NotNull Set<SUser> users) {
         logger.info("Notifying success build");
-        larkNotify(build, users, "success");
+        larkMessageCardNotify(build, users, "success");
     }
 
     @Override
     public void notifyBuildFailed(@NotNull SRunningBuild build, @NotNull Set<SUser> users) {
         logger.info("Notifying fail build");
-        larkNotify(build, users, "fail");
+        larkMessageCardNotify(build, users, "fail");
     }
-
-
 
     /*
     @Override
@@ -310,4 +335,8 @@ public class LarkNotifier extends NotificatorAdapter {
     }
 
      */
+
+    private String getRootUrl() {
+        return rootUrlHolder.isDefaultRootUrl() ? rootUrlHolder.getRootUrl() + ":8111" : rootUrlHolder.getRootUrl();
+    }
 }
