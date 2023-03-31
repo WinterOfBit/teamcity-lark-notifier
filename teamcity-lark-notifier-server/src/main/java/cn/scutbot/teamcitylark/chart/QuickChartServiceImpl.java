@@ -25,12 +25,12 @@ public class QuickChartServiceImpl implements ChartService {
     @Override
     public File drawChartImage(JsonObject chartData) {
         var data = new JsonObject();
-        data.addProperty("version", 4);
+        data.addProperty("version", 2);
         data.addProperty("format", "png");
         data.add("chart", chartData);
 
         try {
-            File target = File.createTempFile("quick-chart", ".png");
+            File target = File.createTempFile("quick-chart-", ".png");
             var request = new HTTPRequestBuilder(QuickChartEndpoint)
                     .withMethod("POST")
                     .withPostStringEntity(

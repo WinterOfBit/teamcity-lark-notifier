@@ -3,7 +3,7 @@
   <info>
     <name>teamcity-lark-notifier</name>
     <display-name>teamcity-lark-notifier</display-name>
-    <version>snapshot-20230331122920</version>
+    <version>1.0</version>
     <description>Send CI Status to Lark</description>
     <email>Aluoqiwen@outlook.com</email>
     <vendor>
