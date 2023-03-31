@@ -275,18 +275,23 @@ public class LarkNotifier extends NotificatorAdapter {
 
     @Override
     public void notifyBuildStarted(@NotNull SRunningBuild build, @NotNull Set<SUser> users) {
+        logger.info("Notifying start build");
         larkNotify(build, users, "start");
     }
 
     @Override
     public void notifyBuildSuccessful(@NotNull SRunningBuild build, @NotNull Set<SUser> users) {
+        logger.info("Notifying success build");
         larkNotify(build, users, "success");
     }
 
     @Override
     public void notifyBuildFailed(@NotNull SRunningBuild build, @NotNull Set<SUser> users) {
+        logger.info("Notifying fail build");
         larkNotify(build, users, "fail");
     }
+
+
 
     /*
     @Override
